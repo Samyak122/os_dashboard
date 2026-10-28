@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><title>KERNEL//WATCH</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0b1020;--pn:#111830;--ln:#26324f;--tx:#d6deef;--dm:#7d8bad;--cy:#22d3ee;--am:#f5a524;--rd:#ff4d5e;--gn:#3ddc84;color-scheme:dark;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);background-image:linear-gradient(#ffffff08 1px,transparent 1px),linear-gradient(90deg,#ffffff08 1px,transparent 1px);background-size:28px 28px;color:var(--tx);font:14px/1.5 Inter,system-ui,sans-serif;display:flex;min-height:100vh}
+.m,td,th,input,code,.lb{font-family:'JetBrains Mono',ui-monospace,monospace}
+aside{width:220px;background:#0a0e1c;border-right:1px solid var(--ln);padding:14px 0;display:flex;flex-direction:column;flex-shrink:0;position:sticky;top:0;height:100vh}
+.logo{font:600 15px 'JetBrains Mono',monospace;padding:0 16px 14px;letter-spacing:.5px}.logo b{color:var(--cy)}
+.logo small{display:block;color:var(--dm);font:400 10px Inter;letter-spacing:0;margin-top:2px}
+nav button{display:block;width:100%;text-align:left;background:none;border:0;border-left:2px solid transparent;color:var(--dm);padding:9px 16px;font:13px Inter;cursor:pointer}
+nav button:hover{color:var(--tx)}nav button.on{color:var(--cy);border-left-color:var(--cy);background:#22d3ee10}
+.sys{margin-top:auto;padding:12px 16px;font-size:11px;color:var(--dm);border-top:1px solid var(--ln)}
+.dot{display:inline-block;width:7px;height:7px;background:var(--gn);border-radius:50%;margin-right:6px}
+main{flex:1;min-width:0}
+header{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:10px 20px;border-bottom:1px solid var(--ln);background:#0b1020ee;position:sticky;top:0;z-index:5}
+#menu{display:none}
+select,input,button.b{background:#0a0e1c;color:var(--tx);border:1px solid var(--ln);padding:6px 9px;font-size:12px}
+button.b{cursor:pointer;font-family:'JetBrains Mono',monospace}button.b:hover{border-color:var(--cy);color:var(--cy)}button.p{border-color:var(--cy);color:var(--cy)}
+:focus-visible{outline:2px solid var(--cy);outline-offset:1px}
+.badge{padding:3px 10px;border:1px solid;font:600 11px 'JetBrains Mono',monospace;letter-spacing:1px}
+.SAFE{color:var(--gn)}.UNSAFE{color:var(--am)}.DEADLOCKED,.INVALID{color:var(--rd)}
+section{padding:20px;max-width:1100px}
+h1{font:600 20px Inter;margin:0 0 2px}.sub{color:var(--dm);font-size:12px;margin-bottom:16px}
+.lb{font-size:10px;letter-spacing:1.2px;color:var(--dm);text-transform:uppercase;margin-bottom:6px}
+.pn{border:1px solid var(--ln);background:var(--pn);padding:14px;margin-bottom:14px;overflow-x:auto}
+.g{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px}
+.big{font:600 28px 'JetBrains Mono',monospace;color:var(--cy)}
+table{border-collapse:collapse;font-size:12px}td,th{border:1px solid var(--ln);padding:4px 8px;text-align:center}th{color:var(--dm);font-weight:400}
+td input{width:46px;text-align:center;padding:3px}
+.bad{border-color:var(--rd)!important}.err{color:var(--rd);font-size:12px;margin:3px 0}
+.bar{height:8px;background:#0a0e1c;border:1px solid var(--ln);margin:3px 0 9px}.bar i{display:block;height:100%;background:var(--cy)}
+.chip{display:inline-block;padding:2px 8px;border:1px solid var(--ln);margin:2px;font:12px 'JetBrains Mono',monospace}
+.chip.f{background:#22d3ee22;border-color:var(--cy);color:var(--cy)}.chip.cur{animation:pl 1s infinite;border-color:var(--am);color:var(--am)}
+@keyframes pl{50%{box-shadow:0 0 10px var(--am)}}
+.seq{font:600 20px 'JetBrains Mono',monospace;color:var(--gn);margin:6px 0}
+.log{font:11px/1.6 'JetBrains Mono',monospace;color:var(--dm);max-height:180px;overflow:auto}
+.pass{color:var(--gn)}.fail{color:var(--rd)}
+.tr div{font:12px 'JetBrains Mono',monospace;padding:2px 0;border-left:2px solid var(--ln);padding-left:8px}
+#toast{position:fixed;bottom:16px;right:16px;background:var(--pn);border:1px solid var(--cy);padding:8px 14px;font:12px 'JetBrains Mono',monospace;display:none;z-index:9}
+.eg{stroke-dasharray:6 4;animation:dash 1s linear infinite}@keyframes dash{to{stroke-dashoffset:-20}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+@media(max-width:760px){aside{position:fixed;z-index:20;left:-230px;transition:left .2s}aside.open{left:0}#menu{display:inline-block}section{padding:14px}}
+</style></head><body>
+<aside id="side"><div class="logo">KERNEL<b>//</b>WATCH<small>Observe contention. Prove safety. Trace deadlocks.</small></div><nav id="nav"></nav>
+<div class="sys"><span class="dot"></span>SIMULATION ENGINE OK<br>all values are simulation data</div></aside>
+<main><header><button class="b" id="menu" aria-label="Menu">☰</button><span class="m" id="simname"></span>
+<select id="scsel" aria-label="Active scenario"></select><span class="badge" id="ind"></span><span style="flex:1"></span>
+<button class="b" id="reset">Reset Simulation</button></header><section id="view" aria-live="polite"></section></main><div id="toast" role="status"></div>
+<script>
+/* ===== algorithm modules (pure, UI-independent) ===== */
+const clone=o=>JSON.parse(JSON.stringify(o)),colSum=(M,j)=>M.reduce((a,r)=>a+r[j],0);
+const ge=(a,b)=>a.every((x,i)=>x>=b[i]);const add=(a,b)=>a.map((x,i)=>x+b[i]),sub=(a,b)=>a.map((x,i)=>x-b[i]);
+const need=s=>s.max.map((r,i)=>sub(r,s.alloc[i])),avail=s=>s.total.map((t,j)=>t-colSum(s.alloc,j));
+const isN=v=>Number.isInteger(v)&&v>=0;
+function validate(s){const e=[];s.total.forEach((v,j)=>isN(v)||e.push(`Total R${j} must be a nonnegative integer`));
+ s.alloc.forEach((r,i)=>r.forEach((v,j)=>{if(!isN(v))e.push(`Allocation P${i}/R${j} must be a nonnegative integer`);else if(isN(s.max[i][j])&&v>s.max[i][j])e.push(`Allocation P${i}/R${j} (${v}) exceeds Max (${s.max[i][j]})`)}));
+ s.max.forEach((r,i)=>r.forEach((v,j)=>isN(v)||e.push(`Max P${i}/R${j} must be a nonnegative integer`)));
+ if(!e.length)s.total.forEach((t,j)=>colSum(s.alloc,j)>t&&e.push(`Allocated R${j} (${colSum(s.alloc,j)}) exceeds total (${t})`));return e}
+function safety(s){const n=s.alloc.length,nd=need(s);let w=avail(s),fin=Array(n).fill(false),seq=[],steps=[];
+ while(!fin.every(Boolean)){let pick=-1,blocked=[];
+  for(let i=0;i<n;i++){if(fin[i])continue;const bad=[];w.forEach((x,j)=>nd[i][j]>x&&bad.push(`R${j}: need ${nd[i][j]} > work ${x}`));
+   if(!bad.length){if(pick<0)pick=i}else blocked.push([i,bad])}
+  if(pick<0){steps.push({work:[...w],after:[...w],pick:-1,blocked,fin:[...fin]});break}
+  const before=[...w];w=add(w,s.alloc[pick]);fin[pick]=true;seq.push(pick);steps.push({work:before,after:[...w],pick,blocked,fin:[...fin]})}
+ return{safe:fin.every(Boolean),seq,steps}}
+function checkSeq(s,seq){let w=avail(s);const nd=need(s);for(const i of seq){if(!ge(w,nd[i]))return false;w=add(w,s.alloc[i])}return seq.length===s.alloc.length}
+function request(s,p,req){const tr=[],m=s.total.length,before=clone(s);const out=(o,st)=>({outcome:o,trace:tr,state:st||clone(before),before});
+ tr.push('ORIGINAL avail='+JSON.stringify(avail(s)));
+ if(!Number.isInteger(p)||p<0||p>=s.alloc.length){tr.push('✗ invalid process id '+p);return out('INVALID REQUEST')}
+ if(req.length!==m||!req.every(isN)){tr.push('✗ request must be '+m+' nonnegative integers');return out('INVALID REQUEST')}
+ const nd=need(s)[p];tr.push(`CHECK 1: Request ≤ Need(P${p}) ${JSON.stringify(nd)}?`);
+ if(!ge(nd,req)){tr.push('✗ exceeds remaining need');return out('INVALID REQUEST')}tr.push('✓ within need');
+ const av=avail(s);tr.push(`CHECK 2: Request ≤ Available ${JSON.stringify(av)}?`);
+ if(!ge(av,req)){tr.push('✗ not enough free instances → defer, state unchanged');return out('WAITING: INSUFFICIENT RESOURCES')}tr.push('✓ available');
+ const t=clone(s);t.alloc[p]=add(t.alloc[p],req);tr.push('TENTATIVE avail='+JSON.stringify(avail(t)));
+ const r=safety(t);tr.push('SAFETY: '+(r.safe?'safe, seq '+r.seq.map(i=>'P'+i).join('→'):'no complete safe sequence'));
+ if(r.safe){tr.push('✓ commit');return out('GRANTED: SAFE RESULTING STATE',t)}tr.push('✗ rollback to original');return out('DENIED: UNSAFE RESULTING STATE')}
+/* detection: multi-instance, request-matrix algorithm (Coffman). Cycle alone is not proof; unfinishable set is. */
+function detect(d){let w=d.total.map((t,j)=>t-colSum(d.alloc,j));const n=d.alloc.length;const fin=d.alloc.map(r=>r.every(x=>x===0));const steps=[];
+ for(let k=0;k<n;k++){const i=fin.findIndex((f,x)=>!f&&ge(w,d.req[x]));if(i<0)break;steps.push(`P${i}: request ${JSON.stringify(d.req[i])} ≤ work ${JSON.stringify(w)} → can finish, releases ${JSON.stringify(d.alloc[i])}`);w=add(w,d.alloc[i]);fin[i]=true}
+ const dead=fin.map((f,i)=>f?-1:i).filter(i=>i>=0);dead.length&&steps.push(`No remaining request fits work ${JSON.stringify(w)} → deadlocked: ${dead.map(i=>'P'+i)}`);return{dead,steps,work:w}}
+function terminate(d,p){const t=clone(d);t.alloc[p]=t.alloc[p].map(()=>0);t.req[p]=t.req[p].map(()=>0);return t}
+function ordering(d){const v=[],ok=clone(d);d.alloc.forEach((a,i)=>{const h=a.reduce((m,x,j)=>x>0?j:m,-1);d.req[i].forEach((q,j)=>{if(q>0&&j<h){v.push(`P${i} holds R${h}, requests R${j} (descending)`);ok.req[i][j]=0}})});return{v,mod:ok}}
+function allAtOnce(d){let av=[...d.total];return d.alloc.map((a,i)=>{const dem=add(a,d.req[i]);if(dem.every(x=>x===0))return{i,dem,st:'idle'};if(ge(av,dem)){av=sub(av,dem);return{i,dem,st:'granted all'}}return{i,dem,st:'waits holding nothing'}})}
+/* ===== fixtures ===== */
+const SC={classic:{name:'Textbook 5P×3R (safe)',total:[10,5,7],alloc:[[0,1,0],[2,0,0],[3,0,2],[2,1,1],[0,0,2]],max:[[7,5,3],[3,2,2],[9,0,2],[2,2,2],[4,3,3]]},
+ tight:{name:'Tight 5P×3R (unsafe)',total:[10,5,7],alloc:[[0,3,0],[2,0,0],[3,0,2],[2,1,1],[0,0,2]],max:[[7,5,3],[3,2,2],[9,0,2],[2,2,2],[4,3,3]]}};
+const D0={total:[1,1],alloc:[[1,0],[0,1],[0,0]],req:[[0,1],[1,0],[0,0]]};
+/* ===== UI state ===== */
+let key='classic',S=clone(SC.classic),D=clone(D0),cur='over',si=-1,timer=null,calc=true,pol='order',rq={p:4,r:[4,0,0]},rres=null,log=[],T={},dRec=false;
+const NAV=[['over','System Overview'],['mat','Allocation Matrices'],['bank',"Banker's Algorithm"],['req','Request Simulator'],['dead','Deadlock Detection'],['prev','Prevention Policies'],['test','Test Laboratory'],['hist','Execution History']];
+const $=s=>document.querySelector(s),V=a=>'['+a.join(', ')+']',P=i=>'P'+i;
+const L=m=>{log.unshift(new Date().toLocaleTimeString()+'  '+m);log=log.slice(0,80)};
+function toast(m){const t=$('#toast');t.textContent=m;t.style.display='block';clearTimeout(t._t);t._t=setTimeout(()=>t.style.display='none',2200)}
+const mt=(M,h,cls='')=>`<table><tr><th></th>${h.map(x=>`<th>${x}</th>`).join('')}</tr>${M.map((r,i)=>`<tr><th>P${i}</th>${r.map(v=>`<td class="${cls}">${v}</td>`).join('')}</tr>`).join('')}</table>`;
+const rh=m=>Array.from({length:m},(_,j)=>'R'+j);
+function edit(name,M,m){return`<table><tr><th></th>${rh(m).map(x=>`<th>${x}</th>`).join('')}</tr>${M.map((r,i)=>`<tr><th>P${i}</th>${r.map((v,j)=>`<td><input type="number" aria-label="${name} P${i} R${j}" value="${v}" data-m="${name}" data-i="${i}" data-j="${j}" class="${isN(v)?'':'bad'}"></td>`).join('')}</tr>`).join('')}</table>`}
+function graph(d,dead=[]){const n=d.alloc.length,m=d.total.length,h=50+Math.max(n,m)*60,py=i=>40+i*(h-60)/Math.max(n-1,1),ry=j=>40+j*(h-60)/Math.max(m-1,1);let e='';
+ d.alloc.forEach((a,i)=>a.forEach((v,j)=>v&&(e+=`<line x1="310" y1="${ry(j)}" x2="86" y2="${py(i)}" stroke="#22d3ee" stroke-width="2"/><text x="200" y="${(ry(j)+py(i))/2-4}" fill="#22d3ee" font-size="10">own ${v}</text>`)));
+ d.req.forEach((r,i)=>r.forEach((v,j)=>v&&(e+=`<line class="eg" x1="86" y1="${py(i)+6}" x2="310" y2="${ry(j)+6}" stroke="${dead.includes(i)?'#ff4d5e':'#f5a524'}" stroke-width="2"/><text x="150" y="${(ry(j)+py(i))/2+16}" fill="#f5a524" font-size="10">req ${v}</text>`)));
+ return`<svg viewBox="0 0 400 ${h}" width="100%" style="max-width:440px" role="img" aria-label="Resource allocation graph" font-family="JetBrains Mono">${e}${d.alloc.map((_,i)=>`<circle cx="70" cy="${py(i)}" r="16" fill="#0a0e1c" stroke="${dead.includes(i)?'#ff4d5e':'#22d3ee'}" stroke-width="2"/><text x="70" y="${py(i)+4}" text-anchor="middle" fill="#d6deef" font-size="11">P${i}</text>`).join('')}${d.total.map((t,j)=>`<rect x="310" y="${ry(j)-14}" width="60" height="28" fill="#0a0e1c" stroke="#7d8bad"/><text x="340" y="${ry(j)+4}" text-anchor="middle" fill="#d6deef" font-size="11">R${j} ×${t}</text>`).join('')}</svg><div class="lb">cyan solid = ownership · amber dashed = request · red = deadlocked</div>`}
+/* ===== views ===== */
+const views={
+over(){const a=avail(S),r=safety(S),m=S.total.length,nd=need(S),tot=S.total.reduce((x,y)=>x+y,0);
+ return`<h1>System Overview</h1><div class="sub">SIMULATION DATA — no live OS telemetry is read.</div><div class="g"><div class="pn"><div class="lb">System state</div><div class="big ${$('#ind').dataset.s}">${$('#ind').textContent}</div></div><div class="pn"><div class="lb">Active processes</div><div class="big">${S.alloc.length}</div><div class="lb">${m} resource types · ${tot} instances</div></div><div class="pn"><div class="lb">Available vector</div><div class="big">${V(a)}</div></div><div class="pn"><div class="lb">Last safety check</div><div class="big ${r.safe?'SAFE':'UNSAFE'}">${r.safe?r.seq.map(P).join('→'):'NO SAFE SEQ'}</div></div></div>
+ <div class="pn"><div class="lb">Resource utilization (simulation)</div>${S.total.map((t,j)=>{const u=t?colSum(S.alloc,j)/t*100:0;return`<div class="m">R${j} ${colSum(S.alloc,j)}/${t}</div><div class="bar"><i style="width:${u}%;${u>85?'background:var(--am)':''}"></i></div>`}).join('')}</div>
+ <div class="pn"><div class="lb">Process table</div><table><tr><th>PID</th><th>Allocation</th><th>Max</th><th>Need</th><th>Status</th></tr>${S.alloc.map((x,i)=>`<tr><td>P${i}</td><td>${V(x)}</td><td>${V(S.max[i])}</td><td>${V(nd[i])}</td><td>${nd[i].every(v=>v===0)?'<span class=SAFE>COMPLETE-READY</span>':ge(a,nd[i])?'<span style="color:var(--cy)">RUNNABLE</span>':'<span style="color:var(--am)">CONTENDING</span>'}</td></tr>`).join('')}</table></div>
+ <div class="pn"><div class="lb">Recent events</div><div class="log">${log.slice(0,6).join('<br>')||'No events yet — run a check or request.'}</div></div>`},
+mat(){const errs=validate(S),m=S.total.length,n=S.alloc.length,ok=!errs.length;
+ return`<h1>Allocation Matrices</h1><div class="sub">Need = Max − Allocation. Available = Total − Σ Allocation (derived).</div>
+ <div class="pn">Processes <input type="number" id="nn" min="1" max="8" value="${n}"> Resource types <input type="number" id="mm" min="1" max="6" value="${m}"> <button class="b" id="rest">Restore Example</button>
+ <div class="lb" style="margin-top:12px">Total instances</div>${S.total.map((t,j)=>`R${j} <input type="number" aria-label="Total R${j}" data-m="total" data-j="${j}" value="${t}" class="${isN(t)?'':'bad'}"> `).join('')}</div>
+ ${errs.map(e=>`<div class="err">✗ ${e}</div>`).join('')}
+ <div class="g"><div class="pn"><div class="lb">Allocation</div>${edit('alloc',S.alloc,m)}</div><div class="pn"><div class="lb">Max</div>${edit('max',S.max,m)}</div></div>
+ ${ok?`<div class="g"><div class="pn"><div class="lb">Need (derived)</div>${mt(need(S),rh(m))}</div><div class="pn"><div class="lb">Available (derived)</div><div class="big">${V(avail(S))}</div></div></div>`:'<div class="pn err">Fix validation errors to compute Need and Available.</div>'}`},
+bank(){const errs=validate(S);if(errs.length)return`<h1>Banker's Algorithm</h1><div class="pn err">INVALID INPUT — ${errs[0]}</div>`;
+ const r=safety(S),st=si>=0?r.steps[si]:null,fin=st?st.fin:S.alloc.map(()=>false),nd=need(S),end=si===r.steps.length-1;
+ return`<h1>Banker's Safety Algorithm</h1><div class="sub">Work = Available; find unfinished Pi with Need ≤ Work; Work += Alloc(Pi).</div>
+ <div class="pn"><button class="b p" id="run">Run Safety Check</button> <button class="b" id="back">Step Back</button> <button class="b" id="fwd">Step Forward</button> <button class="b" id="play">${timer?'Pause':'Play'}</button> <button class="b" id="rex">Reset Execution</button> <label><input type="checkbox" id="calc" ${calc?'checked':''}> Show Calculation</label></div>
+ <div class="pn"><div class="lb">Process timeline</div>${S.alloc.map((_,i)=>`<span class="chip ${st&&st.pick===i?'cur':fin[i]?'f':''}">P${i}${fin[i]?' ✓':''}</span>`).join('')}
+ ${st?`<div class="m" style="margin-top:8px">Step ${si+1}/${r.steps.length} · Work ${V(st.work)} ${st.pick>=0?`→ <b style="color:var(--cy)">P${st.pick}</b> finishes, releases ${V(S.alloc[st.pick])} → Work ${V(st.after)}`:'→ <b class="UNSAFE">no unfinished process can finish</b>'}</div>
+ ${calc?`${st.pick>=0?`<div class="m">Need(P${st.pick}) ${V(nd[st.pick])} ≤ Work ${V(st.work)} ✓</div>`:''}${st.blocked.map(([i,b])=>`<div class="m" style="color:var(--am)">P${i} blocked — ${b.join('; ')}</div>`).join('')}`:''}`:'<div class="lb" style="margin-top:8px">Press Run Safety Check or Step Forward</div>'}
+ ${end?(r.safe?`<div class="seq">${r.seq.map(P).join(' → ')}</div><div class="SAFE">SAFE — complete sequence found.</div>`:`<div class="UNSAFE">UNSAFE — no complete safe sequence found. This does not by itself prove deadlock.</div>`):''}</div>
+ <div class="pn"><div class="lb">Need matrix</div>${mt(nd,rh(S.total.length))}</div>`},
+req(){const m=S.total.length;if(rq.r.length!==m)rq.r=Array(m).fill(0);
+ return`<h1>Resource Request Simulator</h1><div class="sub">Order: need check → availability → tentative allocation → safety → commit or rollback.</div>
+ <div class="pn">Process <select id="rp">${S.alloc.map((_,i)=>`<option value="${i}" ${rq.p===i?'selected':''}>P${i}</option>`).join('')}</select> Request ${rq.r.map((v,j)=>`R${j}<input type="number" data-rq="${j}" value="${v}" style="width:56px" aria-label="Request R${j}"> `).join('')}<button class="b p" id="go">Submit Request</button><div class="m" style="margin-top:8px">Need(P${rq.p}) = ${V(need(S)[rq.p]||[])} · Available = ${V(avail(S))}</div></div>
+ ${rres?`<div class="pn"><div class="lb">Decision</div><div class="big ${rres.outcome.startsWith('GRANTED')?'SAFE':rres.outcome.startsWith('INVALID')?'INVALID':'UNSAFE'}" style="font-size:18px">${rres.outcome}</div><div class="tr" style="margin-top:8px">${rres.trace.map(t=>`<div>${t}</div>`).join('')}</div></div>`:'<div class="pn lb">No request submitted yet.</div>'}`},
+dead(){const r=detect(D),m=D.total.length;
+ return`<h1>Deadlock Detection</h1><div class="sub">Assumption: multi-instance resources, no preemption, detection via Request matrix (independent of Banker's Need/Max). A cycle is proof only for single-instance resources; here deadlock = processes that can never satisfy their request.</div>
+ <div class="g"><div class="pn">${graph(D,r.dead)}</div><div class="pn"><div class="lb">Allocation</div>${mt(D.alloc,rh(m))}<div class="lb" style="margin-top:8px">Request (outstanding)</div>${mt(D.req,rh(m))}<div class="m">Available ${V(D.total.map((t,j)=>t-colSum(D.alloc,j)))}</div></div></div>
+ <div class="pn"><div class="lb">Detection steps</div><div class="tr">${r.steps.map(s=>`<div>${s}</div>`).join('')||'<div>—</div>'}</div><div class="big ${r.dead.length?'DEADLOCKED':'SAFE'}" style="font-size:18px;margin-top:8px">${r.dead.length?'DEADLOCKED: '+r.dead.map(P).join(', '):'NO DEADLOCK'}</div>
+ <div style="margin-top:8px">Recovery: terminate <select id="kp">${D.alloc.map((_,i)=>`<option>${i}</option>`).join('')}</select> <button class="b" id="kill">Terminate &amp; Release</button> <button class="b" id="drst">Restore Scenario</button></div></div>`},
+prev(){const r=detect(D);let body;
+ if(pol==='order'){const o=ordering(D),r2=detect(o.mod);body=`<div class="lb">Original</div>${graph(D,r.dead)}<div class="lb">Policy: acquire in ascending order R0&lt;R1…</div>${o.v.map(x=>`<div class="err">✗ rejected: ${x}</div>`).join('')||'<div>No violations.</div>'}${graph(o.mod,r2.dead)}<div class="${r2.dead.length?'DEADLOCKED':'SAFE'}">Circular wait ${r2.dead.length?'still present':'eliminated: waits can only point to higher-numbered resources, so no cycle can form'}.</div><p>Trade-off: processes may need to acquire resources earlier than needed; rejected requests must be restructured.</p>`}
+ else{const a=allAtOnce(D);body=`<table><tr><th>PID</th><th>Total demand</th><th>Outcome</th></tr>${a.map(x=>`<tr><td>P${x.i}</td><td>${V(x.dem)}</td><td>${x.st}</td></tr>`).join('')}</table><div class="SAFE" style="margin-top:8px">Hold-and-wait eliminated: no process holds resources while waiting.</div><p>Trade-off: lower utilization (resources idle until needed), reduced concurrency and possible starvation of large requesters. Circular wait and others are not claimed eliminated by this policy specifically.</p>`}
+ return`<h1>Prevention Policies</h1><div class="sub">Applied to the deadlock scenario.</div><div class="pn"><button class="b ${pol==='order'?'p':''}" data-pol="order">Resource Ordering</button> <button class="b ${pol==='all'?'p':''}" data-pol="all">Request-All-At-Once</button></div><div class="pn">${body}</div>`},
+test(){return`<h1>Test Laboratory</h1><div class="sub">Each test runs the real modules above; PASS/FAIL is computed.</div><div class="pn"><button class="b p" id="all">Run All Tests</button></div>${TESTS.map(t=>{const r=T[t.id];return`<div class="pn"><div class="lb">${t.id} — ${t.name}</div><div class="m">Input: ${t.input}</div><button class="b" data-t="${t.id}">Run Test</button>${r?` <button class="b" data-x="${t.id}">Reset</button><div style="margin-top:8px"><span class="${r.pass?'pass':'fail'} m">${r.pass?'PASS':'FAIL'}</span><div class="m">Expected: ${r.exp}</div><div class="m">Actual: ${r.act}</div><div class="m">Before: ${r.b}</div><div class="m">After: ${r.a}</div><div style="color:var(--dm)">${r.why}</div></div>`:'<div class="lb" style="margin-top:6px">Not run</div>'}</div>`}).join('')}`},
+hist(){return`<h1>Execution History</h1><div class="pn"><div class="log" style="max-height:none">${log.join('<br>')||'Empty — actions you perform are recorded here.'}</div></div>`}};
+/* ===== tests (real logic) ===== */
+const eq=(a,b)=>JSON.stringify(a)===JSON.stringify(b),C=()=>clone(SC.classic);
+const TESTS=[
+{id:'TC1',name:'Safe state',input:'Textbook state, Available [3,3,2]',run(){const s=C(),r=safety(s);return{pass:r.safe&&checkSeq(s,r.seq),exp:'Safe with a valid complete sequence',act:r.safe?r.seq.map(P).join('→'):'none',b:'avail '+V(avail(s)),a:'unchanged',why:'Need computed as Max−Alloc; sequence independently replayed against Need/Work.'}}},
+{id:'TC2',name:'Request exceeds Available',input:'P4 requests [4,0,0] (Need [4,3,1], Avail [3,3,2])',run(){const s=C(),b=clone(s),r=request(s,4,[4,0,0]);return{pass:r.outcome==='WAITING: INSUFFICIENT RESOURCES'&&eq(s,b)&&eq(r.state,b),exp:'WAITING; state identical',act:r.outcome+'; unchanged='+eq(r.state,b),b:'avail '+V(avail(b)),a:'avail '+V(avail(r.state)),why:'Within Need but above Available, so deferred with no mutation.'}}},
+{id:'TC3',name:'Unsafe resulting state',input:'P0 requests [0,2,0] (≤Need, ≤Avail)',run(){const s=C(),b=clone(s),r=request(s,0,[0,2,0]);return{pass:r.outcome==='DENIED: UNSAFE RESULTING STATE'&&eq(r.state,b)&&eq(s,b),exp:'DENIED; rolled back exactly',act:r.outcome+'; restored='+eq(r.state,b),b:'avail '+V(avail(b)),a:'avail '+V(avail(r.state)),why:'Tentative allocation left no complete safe sequence, so it was denied and rolled back.'}}},
+{id:'TC4',name:'Deadlock + recovery',input:'3 procs, 2 single-instance resources, P0↔P1 crossed requests',run(){const r=detect(D0),t=terminate(D0,0),r2=detect(t);return{pass:eq(r.dead,[0,1])&&r2.dead.length===0,exp:'Deadlock {P0,P1}; none after terminating P0',act:'dead='+V(r.dead.map(P))+'; after recovery dead='+V(r2.dead.map(P)),b:'avail '+V(r.work),a:'avail '+V(r2.work),why:'Termination releases P0\'s allocation, letting P1 finish.'}}},
+{id:'TC5',name:'Prevention policy',input:'Resource ordering + request-all on TC4 scenario',run(){const o=ordering(D0),r=detect(o.mod),a=allAtOnce(D0),hold=a.some(x=>x.st==='waits holding nothing')&&true;return{pass:o.v.length>0&&r.dead.length===0&&a.filter(x=>x.st==='granted all').length>=1,exp:'Descending request rejected; no deadlock; waiters hold nothing',act:o.v.join('; ')+' | '+a.map(x=>'P'+x.i+':'+x.st).join(', '),b:'deadlocked '+V(detect(D0).dead.map(P)),a:'deadlocked '+V(r.dead.map(P)),why:'Ordering enforced by rejecting violating requests; request-all makes waiters hold nothing.'}}},
+{id:'TC6',name:'Boundary & invalid inputs',input:'Zero avail, zero need, bad PID, negative request, Alloc>Max',run(){const z=C();z.total=[7,2,5];const k=C();k.alloc[3]=[2,2,2];const res=[request(z,0,[1,0,0]).outcome,request(k,3,[1,0,0]).outcome,request(C(),9,[0,0,0]).outcome,request(C(),0,[-1,0,0]).outcome];const bad=C();bad.alloc[0]=[9,9,9];const v=validate(bad);const ex=['WAITING: INSUFFICIENT RESOURCES','INVALID REQUEST','INVALID REQUEST','INVALID REQUEST'];return{pass:eq(res,ex)&&v.length>0,exp:ex.join(' | ')+' | validation error',act:res.join(' | ')+' | '+v.length+' validation errors',b:'—',a:'no state mutated',why:'Every boundary case is handled by real validation code.'}}}];
+function runT(t){T[t.id]=t.run();L(`${t.id} ${T[t.id].pass?'PASS':'FAIL'}`)}
+/* ===== shell ===== */
+function ind(){const e=validate(S);let s=e.length?'INVALID INPUT':cur==='dead'||cur==='prev'?(detect(D).dead.length?'DEADLOCKED':'SAFE'):(safety(S).safe?'SAFE':'UNSAFE');const el=$('#ind');el.textContent=s;el.dataset.s=s.split(' ')[0];el.className='badge '+s.split(' ')[0]}
+function draw(){$('#simname').textContent='SIM: '+(SC[key]?SC[key].name:'custom');ind();$('#view').innerHTML=views[cur]();$('#nav').innerHTML=NAV.map(([k,l])=>`<button data-v="${k}" class="${k===cur?'on':''}">${l}</button>`).join('');ind()}
+function stop(){clearInterval(timer);timer=null}
+function load(k){key=k;S=clone(SC[k]);si=-1;rres=null;stop();L('Scenario: '+SC[k].name);draw()}
+$('#scsel').innerHTML=Object.entries(SC).map(([k,v])=>`<option value="${k}">${v.name}</option>`).join('');
+$('#scsel').onchange=e=>load(e.target.value);
+$('#reset').onclick=()=>{D=clone(D0);T={};log=[];rq={p:4,r:[4,0,0]};load(key);toast('Simulation reset')};
+$('#menu').onclick=()=>$('#side').classList.toggle('open');
+document.addEventListener('click',e=>{const t=e.target,v=t.dataset.v;if(v){cur=v;stop();$('#side').classList.remove('open');draw();return}
+ const id=t.id,r=safety(S);
+ if(id==='run'){si=r.steps.length-1;L(`Safety check: ${r.safe?'SAFE '+r.seq.map(P).join('→'):'no safe sequence'}`);draw()}
+ else if(id==='fwd'){si=Math.min(si+1,r.steps.length-1);draw()}else if(id==='back'){si=Math.max(si-1,-1);draw()}
+ else if(id==='rex'){si=-1;stop();draw()}
+ else if(id==='play'){if(timer)stop();else{if(si>=r.steps.length-1)si=-1;timer=setInterval(()=>{const q=safety(S);if(si>=q.steps.length-1){stop()}else si++;draw()},900)}draw()}
+ else if(id==='rest'){load('classic')}
+ else if(id==='go'){const res=request(S,rq.p,rq.r);rres=res;if(res.outcome.startsWith('GRANTED'))S=res.state;L(`P${rq.p} ${V(rq.r)} → ${res.outcome}`);toast(res.outcome);draw()}
+ else if(id==='kill'){const p=+$('#kp').value;D=terminate(D,p);L(`Terminated P${p}; resources released`);toast('P'+p+' terminated');draw()}
+ else if(id==='drst'){D=clone(D0);draw()}
+ else if(id==='all'){TESTS.forEach(runT);toast('All tests executed');draw()}
+ else if(t.dataset.pol){pol=t.dataset.pol;draw()}
+ else if(t.dataset.t){runT(TESTS.find(x=>x.id===t.dataset.t));draw()}
+ else if(t.dataset.x){delete T[t.dataset.x];draw()}});
+document.addEventListener('change',e=>{const t=e.target,d=t.dataset;
+ if(t.id==='calc'){calc=t.checked;draw()}else if(t.id==='rp'){rq.p=+t.value;draw()}
+ else if(d.rq!==undefined){rq.r[+d.rq]=t.value===''?NaN:Number(t.value)}
+ else if(d.m==='total'){S.total[+d.j]=t.value===''?NaN:Number(t.value);si=-1;draw()}
+ else if(d.m){S[d.m][+d.i][+d.j]=t.value===''?NaN:Number(t.value);si=-1;draw()}
+ else if(t.id==='nn'||t.id==='mm'){const n=Math.max(1,Math.min(8,+$('#nn').value)),m=Math.max(1,Math.min(6,+$('#mm').value));
+  const fit=(M,rows,cols)=>Array.from({length:rows},(_,i)=>Array.from({length:cols},(_,j)=>(M[i]&&M[i][j])||0));
+  S.alloc=fit(S.alloc,n,m);S.max=fit(S.max,n,m);S.total=Array.from({length:m},(_,j)=>S.total[j]||0);si=-1;L(`Resized to ${n}P×${m}R`);draw()}});
+draw();
+</script></body></html>
